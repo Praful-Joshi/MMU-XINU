@@ -5,12 +5,25 @@
 #include <paging.h>
 #include <proc.h>
 
+bs_map_t bsm_tab[NUM_BACKING_STORES];
+
 /*-------------------------------------------------------------------------
  * init_bsm- initialize bsm_tab
  *-------------------------------------------------------------------------
  */
 SYSCALL init_bsm()
 {
+    STATWORD ps;
+    disable(ps);
+    
+    int i = 0;
+    // init all backing stores to unmapped
+    for (i = 0; i < NUM_BACKING_STORES; i++) {
+        bsm_tab[i].BS_STATUS = UNMAPPED;
+    }
+
+    restore(ps);
+    return(OK);
 }
 
 /*-------------------------------------------------------------------------
