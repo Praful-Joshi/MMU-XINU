@@ -19,7 +19,7 @@ SYSCALL init_bsm()
     int i = 0;
     // init all backing stores to unmapped
     for (i = 0; i < NUM_BACKING_STORES; i++) {
-        bsm_tab[i].BS_STATUS = UNMAPPED;
+        bsm_tab[i].BS_STATUS = BSM_UNMAPPED;
     }
 
     restore(ps);
@@ -32,6 +32,21 @@ SYSCALL init_bsm()
  */
 SYSCALL get_bsm(int* avail)
 {
+    STATWORD ps;
+    disable(ps);
+
+    int i;
+
+    for (i = 0; i < NUM_BACKING_STORES; i++) {
+        if (bsm_tab[i].BS_STATUS == BSM_UNMAPPED) {
+            // set pointer to this index
+            *(avail) = i;
+            return(OK);
+        }
+    }
+
+    restore(ps);
+    return(SYSERR);
 }
 
 
@@ -41,6 +56,16 @@ SYSCALL get_bsm(int* avail)
  */
 SYSCALL free_bsm(int i)
 {
+    STATWORD ps;
+    disable(ps);
+    
+    int i = 0;
+    // init all backing stores to unmapped
+    for (i = 0; i < NUM_BACKING_STORES; i++) {
+        bsm_tab[i].BS_STATUS = BSM_UNMAPPED;
+    }
+
+    restore(ps);
 }
 
 /*-------------------------------------------------------------------------
@@ -49,6 +74,12 @@ SYSCALL free_bsm(int i)
  */
 SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 {
+    STATWORD ps;
+    disable(ps);
+
+    
+
+    restore(ps);
 }
 
 
@@ -58,6 +89,12 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
  */
 SYSCALL bsm_map(int pid, int vpno, int source, int npages)
 {
+    STATWORD ps;
+    disable(ps);
+
+    
+
+    restore(ps);
 }
 
 
@@ -68,6 +105,12 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
  */
 SYSCALL bsm_unmap(int pid, int vpno, int flag)
 {
+    STATWORD ps;
+    disable(ps);
+
+    
+
+    restore(ps);
 }
 
 
