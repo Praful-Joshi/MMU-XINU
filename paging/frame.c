@@ -4,13 +4,24 @@
 #include <proc.h>
 #include <paging.h>
 
+fr_map_t frm_tab[NFRAMES];
+
 /*-------------------------------------------------------------------------
  * init_frm - initialize frm_tab
  *-------------------------------------------------------------------------
  */
 SYSCALL init_frm()
 {
-  kprintf("To be implemented!\n");
+  STATWORD ps;
+  disable(ps);
+
+  int i = 0;
+  for (i = 0; i < NFRAMES; i++) {
+    frm_tab[i].fr_status = FRM_UNMAPPED;
+    frm_tab[i].fr_pid = -1;
+  }
+
+  enable(ps);
   return OK;
 }
 
@@ -20,8 +31,21 @@ SYSCALL init_frm()
  */
 SYSCALL get_frm(int* avail)
 {
-  kprintf("To be implemented!\n");
-  return OK;
+  STATWORD ps;
+  disable(ps);
+
+  int i = 0;
+  for (i = 0; i < NFRAMES; i++) {
+    if (frm_tab[i].fr_status == FRM_UNMAPPED) {
+      *avail = i;
+
+      enable(ps);
+      return OK;
+    }
+  }
+  //none available
+  enable(ps);
+  return SYSERR;
 }
 
 /*-------------------------------------------------------------------------
@@ -30,8 +54,25 @@ SYSCALL get_frm(int* avail)
  */
 SYSCALL free_frm(int i)
 {
+  STATWORD ps;
+  disable(ps);
 
-  kprintf("To be implemented!\n");
+  if (i < 0 || i >= NFRAMES) {
+    enable(ps);
+    return SYSERR;
+  }
+
+  if (frm_tab[i].fr_status == FRM_UNMAPPED) {
+    enable(ps);
+    return OK;
+  } else {
+    // if mapped, unmap it
+    frm_tab[i].fr_status = FRM_UNMAPPED;
+    frm_tab[i].fr_pid = -1;
+  }
+
+
+  enable(ps);
   return OK;
 }
 

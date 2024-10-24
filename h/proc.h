@@ -77,10 +77,6 @@ struct	pentry	{
         int     vhpno;                  /* starting pageno for vheap    */
         int     vhpnpages;              /* vheap size                   */
         struct mblock *vmemlist;        /* vheap list              	*/
-
-	/* Virtual memory additions */
-	unsigned int bs_store; // the backing store assigned to this process for a virtual heap
-						   // only positive value if virtual heap
 	
 
 };
@@ -90,5 +86,7 @@ extern	struct	pentry proctab[];
 extern	int	numproc;		/* currently active processes	*/
 extern	int	nextproc;		/* search point for free slot	*/
 extern	int	currpid;		/* currently executing process	*/
+
+void init_pd(int pid);
 
 #endif

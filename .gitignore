@@ -1,5 +1,4 @@
 *.o
-compile/vn
 compile/version
 compile/xinu.elf
 h/conf.h

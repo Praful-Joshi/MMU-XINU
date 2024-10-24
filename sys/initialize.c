@@ -49,6 +49,14 @@ int	console_dev;		/* the console device			*/
 /*  added for the demand paging */
 int page_replace_policy = SC;
 
+void init_pd(int pid) {
+	if (pid == 0) {
+		// init global page tables (x4)
+		// also init page directory
+		pd_t *pd;
+	}
+}
+
 /************************************************************************/
 /***				NOTE:				      ***/
 /***								      ***/
@@ -169,6 +177,7 @@ sysinit()
 	for (i=0 ; i<NPROC ; i++)	/* initialize process table */
 		proctab[i].pstate = PRFREE;
 
+	init_frm(); // initialize frame table
 	init_bsm(); // initialize backing store map list
 
 
