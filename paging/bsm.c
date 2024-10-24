@@ -19,7 +19,8 @@ SYSCALL init_bsm()
     int i = 0;
     // init all backing stores to unmapped
     for (i = 0; i < NUM_BACKING_STORES; i++) {
-        bsm_tab[i].BS_STATUS = BSM_UNMAPPED;
+        bsm_tab[i].bs_status = BSM_UNMAPPED;
+        bsm_tab[i].bs_pid = -1;
     }
 
     restore(ps);
@@ -38,7 +39,7 @@ SYSCALL get_bsm(int* avail)
     int i;
 
     for (i = 0; i < NUM_BACKING_STORES; i++) {
-        if (bsm_tab[i].BS_STATUS == BSM_UNMAPPED) {
+        if (bsm_tab[i].bs_status == BSM_UNMAPPED && bsm_tab[i].bs_pid == -1) {
             // set pointer to this index
             *(avail) = i;
             return(OK);
@@ -59,13 +60,16 @@ SYSCALL free_bsm(int i)
     STATWORD ps;
     disable(ps);
     
-    int i = 0;
-    // init all backing stores to unmapped
-    for (i = 0; i < NUM_BACKING_STORES; i++) {
-        bsm_tab[i].BS_STATUS = BSM_UNMAPPED;
+    if (i >= 0 && i <= 8 && (bsm_tab[i].bs_status == BSM_MAPPED || bsm_tab[i].bs_pid > -1)) {
+        // free the entry
+        bsm_tab[i].bs_status = BSM_UNMAPPED;
+        bsm_tab[i].bs_pid = -1;
+        restore(ps);
+        return(OK);
     }
 
     restore(ps);
+    return(SYSERR);
 }
 
 /*-------------------------------------------------------------------------
@@ -74,12 +78,24 @@ SYSCALL free_bsm(int i)
  */
 SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 {
+    // This is only used for a private heap?
     STATWORD ps;
     disable(ps);
 
-    
+    int i = 0;
+    for (i = 0; i < NUM_BACKING_STORES; i++) {
+        // ensure BS is mapped and starting vaddr is valid for the requested page
+        if (bsm_tab[i].bs_status == BSM_MAPPED && (bsm_tab[i].bs_pid == -1 || bsm_tab[i].bs_pid == pid) && bsm_tab[i].bs_vpno <= vaddr/NBPG) {
+            // valid page given the pid, so let's find where in the backing store the vaddr is
+            *pageth = vaddr/NBPG - bsm_tab[i].bs_vpno;
+            *store = i;
+            restore(ps);
+            return(OK);
+        }
+    }
 
     restore(ps);
+    return(SYSERR);
 }
 
 
@@ -92,9 +108,17 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
     STATWORD ps;
     disable(ps);
 
-    
-
+    int i = 0;
+    if (bsm_tab[source].bs_status == BSM_UNMAPPED && (pid == -1 || bsm_tab[source].bs_pid == pid)) {
+        // if umapped, we can map this backing store
+        bsm_tab[source].bs_status = BSM_MAPPED;
+        bsm_tab[source].bs_pid = pid;
+        bsm_tab[source].bs_vpno = vpno;
+        bsm_tab[source].bs_npages = npages;
+    }
+    // none available
     restore(ps);
+    return(SYSERR);
 }
 
 
@@ -108,9 +132,19 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
     STATWORD ps;
     disable(ps);
 
-    
+    int i = 0;
+    for (i = 0; i < NUM_BACKING_STORES; i++) {
+        if (bsm_tab[i].bs_status == BSM_MAPPED && (bsm_tab[i].bs_pid == pid || bsm_tab[i].bs_pid == -1) && bsm_tab[i].bs_vpno == vpno) {
+            // unmap this entry
+            bsm_tab[i].bs_status = BSM_UNMAPPED;
+            bsm_tab[i].bs_pid = -1;
+            restore(ps);
+            return(OK);
+        }
+    }
 
     restore(ps);
+    return(SYSERR);
 }
 
 

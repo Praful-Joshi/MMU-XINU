@@ -77,6 +77,12 @@ struct	pentry	{
         int     vhpno;                  /* starting pageno for vheap    */
         int     vhpnpages;              /* vheap size                   */
         struct mblock *vmemlist;        /* vheap list              	*/
+
+	/* Virtual memory additions */
+	unsigned int bs_store; // the backing store assigned to this process for a virtual heap
+						   // only positive value if virtual heap
+	
+
 };
 
 
