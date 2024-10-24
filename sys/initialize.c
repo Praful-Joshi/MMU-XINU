@@ -169,6 +169,8 @@ sysinit()
 	for (i=0 ; i<NPROC ; i++)	/* initialize process table */
 		proctab[i].pstate = PRFREE;
 
+	init_bsm(); // initialize backing store map list
+
 
 #ifdef	MEMMARK
 	_mkinit();			/* initialize memory marking */
