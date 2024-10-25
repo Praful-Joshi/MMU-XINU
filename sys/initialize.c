@@ -49,12 +49,36 @@ int	console_dev;		/* the console device			*/
 /*  added for the demand paging */
 int page_replace_policy = SC;
 
-void init_pd(int pid) {
-	if (pid == 0) {
-		// init global page tables (x4)
-		// also init page directory
-		pd_t *pd;
+pd_t *init_pd(int pid) {
+	// init global page tables (x4)
+	// also init page directory
+	pd_t *pd;
+	// need to find an available frame
+	int avail;
+	get_frm(&avail);
+	// allocate the frame for the page directory
+	frm_tab[avail].fr_status = FRM_MAPPED;
+	frm_tab[avail].fr_pid = pid;
+	frm_tab[avail].fr_type = FR_DIR;
+	proctab[pid].pdbr = NBPG * (avail + FRAME0); // address of the frame being used
+	pd = (pd_t *) (NBPG * (avail + FRAME0)); // assign address of frame to dir
+	pd->pd_pres = 1;
+	pd->pd_write = 1;
+	// now allocate first four frames for the first four page tables
+	int i = 0;
+	for (i = 0; i < 4; i++) {
+		int pt_frame;
+		pt_t *pt;
+		get_frm(&pt_frame);
+		frm_tab[pt_frame].fr_status = FRM_MAPPED;
+		frm_tab[pt_frame].fr_pid = pid;
+		frm_tab[pt_frame].fr_type = FR_TBL;
+		pt = (pt_t *) (NBPG * (pt_frame + FRAME0));
+		pt->pt_pres = 1;
+		pt->pt_write = 1;
+		pd[i].pd_base = (((unsigned int) pt) >> 3);
 	}
+	return pd;
 }
 
 /************************************************************************/
@@ -213,6 +237,8 @@ sysinit()
 	pptr->pargs = 0;
 	pptr->pprio = 0;
 	currpid = NULLPROC;
+
+	pptr->pdbr = (unsigned long) init_pd(NULLPROC);
 
 	for (i=0 ; i<NSEM ; i++) {	/* initialize semaphores */
 		(sptr = &semaph[i])->sstate = SFREE;
