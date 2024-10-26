@@ -78,6 +78,11 @@ pd_t *init_pd(int pid) {
 		pt->pt_write = 1;
 		pd[i].pd_base = (((unsigned int) pt) >> 3);
 	}
+	// fill in rest of entries
+	for (i = 4; i < 1024; i++) {
+		pd[i].pd_pres = 0;
+		pd[i].pd_write = 1;
+	}
 	return pd;
 }
 
