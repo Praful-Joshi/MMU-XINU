@@ -62,8 +62,8 @@ pd_t *init_pd(int pid) {
 	frm_tab[avail].fr_type = FR_DIR;
 	proctab[pid].pdbr = NBPG * (avail + FRAME0); // address of the frame being used
 	pd = (pd_t *) (NBPG * (avail + FRAME0)); // assign address of frame to dir
-	pd->pd_pres = 1;
-	pd->pd_write = 1;
+	// pd->pd_pres = 1;
+	// pd->pd_write = 1;
 	// now allocate first four frames for the first four page tables
 	int i = 0;
 	for (i = 0; i < 4; i++) {
@@ -73,10 +73,18 @@ pd_t *init_pd(int pid) {
 		frm_tab[pt_frame].fr_status = FRM_MAPPED;
 		frm_tab[pt_frame].fr_pid = pid;
 		frm_tab[pt_frame].fr_type = FR_TBL;
+		frm_tab[pt_frame].fr_vpno = FRAME0 + pt_frame;
 		pt = (pt_t *) (NBPG * (pt_frame + FRAME0));
-		pt->pt_pres = 1;
-		pt->pt_write = 1;
+		// pt->pt_pres = 0;
+		// pt->pt_write = 1;
 		pd[i].pd_base = (((unsigned int) pt) >> 3);
+		pd[i].pd_pres = 1;
+		pd[i].pd_write = 1;
+		int j = 0;
+		for (j = 0; j < 1024; j++) {
+			pt[j].pt_pres = 0;
+			pt[j].pt_write = 1;
+		}
 	}
 	// fill in rest of entries
 	for (i = 4; i < 1024; i++) {
@@ -244,6 +252,7 @@ sysinit()
 	currpid = NULLPROC;
 
 	pptr->pdbr = (unsigned long) init_pd(NULLPROC);
+	write_cr3(pptr->pdbr);
 
 	for (i=0 ; i<NSEM ; i++) {	/* initialize semaphores */
 		(sptr = &semaph[i])->sstate = SFREE;
@@ -251,7 +260,9 @@ sysinit()
 	}
 
 	rdytail = 1 + (rdyhead=newqueue());/* initialize ready list */
-
+	
+	set_evec(14, (u_long) pfintr);
+	enable_paging();
 
 	return(OK);
 }
@@ -286,7 +297,7 @@ long sizmem()
 	/* at least now its hacked to return
 	   the right value for the Xinu lab backends (16 MB) */
 
-	return 4096; 
+	return 2048; 
 
 	start = ptr = 0;
 	npages = 0;
