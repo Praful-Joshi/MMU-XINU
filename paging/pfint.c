@@ -44,6 +44,15 @@ SYSCALL pfint()
       // all entries in new page table
 			pt[j].pt_pres = 0;
 			pt[j].pt_write = 1;
+      pt[j].pt_user = 0;
+			pt[j].pt_pwt = 0;
+			pt[j].pt_pcd = 0;
+			pt[j].pt_acc = 0;
+			pt[j].pt_dirty = 0;
+			pt[j].pt_mbz = 0;
+			pt[j].pt_global = 0;
+			pt[j].pt_avail = 0;
+			pt[j].pt_base = 0;
 		}
 
   }
@@ -60,6 +69,7 @@ SYSCALL pfint()
     // page table entry now valid and present
     pt_entry->pt_pres = 1;
     pt_entry->pt_write = 1;
+    pt_entry->pt_base = (unsigned long) ((NBPG * (frame+FRAME0)) << 3);
 
   }
 
