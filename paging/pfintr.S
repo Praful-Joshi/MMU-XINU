@@ -12,7 +12,6 @@ pfintr:
     call pfint /* to handle page fault */
     popal
     popfl
-    sti
     iret
 
 

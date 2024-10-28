@@ -12,6 +12,8 @@
  */
 SYSCALL pfint()
 {
+  STATWORD ps;
+  disable(ps);
 
   // get the faulting address
   unsigned long addr = read_cr2();
@@ -35,7 +37,7 @@ SYSCALL pfint()
     frm_tab[frame].fr_vpno = FRAME0+frame;
 
     pt_t *pt = (pt_t *) (NBPG * (frame + FRAME0));
-    pd_entry->pd_base = (((unsigned int) pt) >> 3);
+    pd_entry->pd_base = FRAME0 + frame;
     // page dir entry now valid and present
     pd_entry->pd_pres = 1;
     pd_entry->pd_write = 1;
@@ -69,10 +71,10 @@ SYSCALL pfint()
     // page table entry now valid and present
     pt_entry->pt_pres = 1;
     pt_entry->pt_write = 1;
-    pt_entry->pt_base = (unsigned long) ((NBPG * (frame+FRAME0)) << 3);
+    pt_entry->pt_base = FRAME0 + frame;
 
   }
-
+  enable(ps);
   return OK;
 }
 

@@ -60,7 +60,6 @@ pd_t *init_pd(int pid) {
 	frm_tab[avail].fr_status = FRM_MAPPED;
 	frm_tab[avail].fr_pid = pid;
 	frm_tab[avail].fr_type = FR_DIR;
-	proctab[pid].pdbr = NBPG * (avail + FRAME0); // address of the frame being used
 	pd = (pd_t *) (NBPG * (avail + FRAME0)); // assign address of frame to dir
 	// pd->pd_pres = 1;
 	// pd->pd_write = 1;
@@ -77,7 +76,7 @@ pd_t *init_pd(int pid) {
 		pt = (pt_t *) (NBPG * (pt_frame + FRAME0));
 		// pt->pt_pres = 0;
 		// pt->pt_write = 1;
-		pd[i].pd_base = (((unsigned int) pt) >> 3);
+		pd[i].pd_base = FRAME0 + pt_frame;//(((unsigned int) pt) >> 3);
 		pd[i].pd_pres = 1;
 		pd[i].pd_write = 1;
 		pd[i].pd_user = 0;
@@ -90,7 +89,7 @@ pd_t *init_pd(int pid) {
 		pd[i].pd_avail = 0;
 		int j = 0;
 		for (j = 0; j < 1024; j++) {
-			pt[j].pt_pres = 0;
+			pt[j].pt_pres = 1;
 			pt[j].pt_write = 1;
 			pt[j].pt_user = 0;
 			pt[j].pt_pwt = 0;
@@ -100,7 +99,7 @@ pd_t *init_pd(int pid) {
 			pt[j].pt_mbz = 0;
 			pt[j].pt_global = 0;
 			pt[j].pt_avail = 0;
-			pt[j].pt_base = 0;
+			pt[j].pt_base = (FRAME0 * i) + j; // map to the exact phsyical frame
 		}
 	}
 	// fill in rest of entries
@@ -117,7 +116,7 @@ pd_t *init_pd(int pid) {
 		pd[i].pd_avail = 0;
 		pd[i].pd_base = 0;
 	}
-	return pd;
+	return NBPG * (avail + FRAME0);
 }
 
 /************************************************************************/
@@ -323,7 +322,7 @@ long sizmem()
 	/* at least now its hacked to return
 	   the right value for the Xinu lab backends (16 MB) */
 
-	return 2048; 
+	return 4096; 
 
 	start = ptr = 0;
 	npages = 0;
