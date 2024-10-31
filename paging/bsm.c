@@ -81,11 +81,14 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
     // This is only used for a private heap?
     STATWORD ps;
     disable(ps);
-
     int i = 0;
     for (i = 0; i < NUM_BACKING_STORES; i++) {
+        if (i == 1) {
+            // kprintf("VPNO of store is %d and page requested is %d\n", bsm_tab[i].bs_vpno, vaddr/NBPG);
+            // kprintf("PID of store is %d and pid requested is %d\n", bsm_tab[i].bs_pid, pid);
+        }
         // ensure BS is mapped and starting vaddr is valid for the requested page
-        if (bsm_tab[i].bs_status == BSM_MAPPED && (bsm_tab[i].bs_pid == -1 || bsm_tab[i].bs_pid == pid) && bsm_tab[i].bs_vpno <= vaddr/NBPG) {
+        if (bsm_tab[i].bs_status == BSM_MAPPED && (bsm_tab[i].bs_pid == pid) && bsm_tab[i].bs_vpno <= vaddr/NBPG) {
             // valid page given the pid, so let's find where in the backing store the vaddr is
             *pageth = vaddr/NBPG - bsm_tab[i].bs_vpno;
             *store = i;
@@ -93,7 +96,7 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
             return(OK);
         }
     }
-
+    // kprintf("Did not find store\n");
     restore(ps);
     return(SYSERR);
 }
@@ -109,14 +112,18 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
     disable(ps);
 
     int i = 0;
-    if (bsm_tab[source].bs_status == BSM_UNMAPPED && (pid == -1 || bsm_tab[source].bs_pid == pid)) {
+    if (bsm_tab[source].bs_status == BSM_UNMAPPED && (bsm_tab[source].bs_pid == -1)) {
         // if umapped, we can map this backing store
         bsm_tab[source].bs_status = BSM_MAPPED;
         bsm_tab[source].bs_pid = pid;
         bsm_tab[source].bs_vpno = vpno;
         bsm_tab[source].bs_npages = npages;
+        // kprintf("mapped succesfully \n");
+        restore(ps);
+        return OK;
     }
     // none available
+    // kprintf("not mapped\n");
     restore(ps);
     return(SYSERR);
 }

@@ -274,6 +274,7 @@ sysinit()
 	pptr->paddr = (WORD) nulluser;
 	pptr->pargs = 0;
 	pptr->pprio = 0;
+	pptr->using_vmem = -1;
 	currpid = NULLPROC;
 
 	pptr->pdbr = (unsigned long) init_pd(NULLPROC);

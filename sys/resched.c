@@ -3,6 +3,7 @@
 #include <conf.h>
 #include <kernel.h>
 #include <proc.h>
+#include <paging.h>
 #include <q.h>
 
 unsigned long currSP;	/* REAL sp of current process */
@@ -82,8 +83,18 @@ int	resched()
 #ifdef	DEBUG
 	PrintSaved(nptr);
 #endif
-	
+	// set vmmap vars
+	if (nptr->using_vmem == 0) {
+		bsm_tab[nptr->store].bs_vpno = nptr->vhpno;
+		bsm_tab[nptr->store].bs_npages = nptr->vhpnpages;
+		// kprintf("Setting PID to %d\n", currpid);
+		bsm_tab[nptr->store].bs_pid = currpid;
+	}
+	//pdbr always in mem
+	write_cr3(nptr->pdbr);
 	ctxsw(&optr->pesp, optr->pirmask, &nptr->pesp, nptr->pirmask);
+	
+	
 
 #ifdef	DEBUG
 	PrintSaved(nptr);

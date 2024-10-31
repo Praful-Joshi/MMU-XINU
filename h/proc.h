@@ -77,7 +77,8 @@ struct	pentry	{
         int     vhpno;                  /* starting pageno for vheap    */
         int     vhpnpages;              /* vheap size                   */
         struct mblock *vmemlist;        /* vheap list              	*/
-	
+		int using_vmem; // is this process using a vheap? -1 if no virtual mem, 0 if vmmap, an 1 if vcreate heap
+		
 
 };
 
