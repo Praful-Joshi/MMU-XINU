@@ -141,10 +141,11 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
 
     int i = 0;
     for (i = 0; i < NUM_BACKING_STORES; i++) {
-        if (bsm_tab[i].bs_status == BSM_MAPPED && (bsm_tab[i].bs_pid == pid || bsm_tab[i].bs_pid == -1) && bsm_tab[i].bs_vpno == vpno) {
+        if (bsm_tab[i].bs_status == BSM_MAPPED && (bsm_tab[i].bs_pid == pid) && bsm_tab[i].bs_vpno == vpno) {
             // unmap this entry
             bsm_tab[i].bs_status = BSM_UNMAPPED;
             bsm_tab[i].bs_pid = -1;
+            // kprintf("unmapped succesfully \n");
             restore(ps);
             return(OK);
         }
