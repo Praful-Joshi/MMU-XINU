@@ -35,7 +35,7 @@ void proc1_test1(char *msg, int lck) {
     kprintf("0x%08x: %c\n", addr + (i * NBPG), *(addr + (i * NBPG)));
   }
 
-  xmunmap(PROC1_VPNO);
+  // xmunmap(PROC1_VPNO);
   return;
 }
 
@@ -80,11 +80,11 @@ int main() {
   resume(pid1);
   sleep(10);
 
-//   kprintf("\n2: vgetmem/vfreemem\n");
-//   pid1 = vcreate(proc1_test2, 2000, 100, 20, "proc1_test2", 0, NULL);
-//   kprintf("pid %d has private heap\n", pid1);
-//   resume(pid1);
-//   sleep(3);
+  kprintf("\n2: vgetmem/vfreemem\n");
+  pid1 = vcreate(proc1_test2, 2000, 100, 20, "proc1_test2", 0, NULL);
+  kprintf("pid %d has private heap\n", pid1);
+  resume(pid1);
+  sleep(3);
 
 //   kprintf("\n3: Frame test\n");
 //   pid1 = create(proc1_test3, 2000, 20, "proc1_test3", 0, NULL);
