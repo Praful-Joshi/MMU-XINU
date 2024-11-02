@@ -78,11 +78,11 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	int store = -1;
 	get_bsm(&store);
 	if (store == -1) {
-		enable(ps);
+		restore(ps);
 		return SYSERR;
 	}
 	if (bsm_map(pid, 4096, store, hsize) == SYSERR) {
-		enable(ps);
+		restore(ps);
 		return SYSERR;
 	}
 	pptr->store = store;
