@@ -23,16 +23,16 @@ SYSCALL	vfreemem(block, size)
 		return(SYSERR);
 	size = (unsigned)roundmb(size);
 	disable(ps);
-	for( p=proctab[currpid].vmemlist->mnext,q= &proctab[currpid].vmemlist;
+	for( p=proctab[currpid].vmemlist->mnext,q= proctab[currpid].vmemlist;
 	     p != (struct mblock *) NULL && p < block ;
 	     q=p,p=p->mnext )
 		;
-	if (((top=q->mlen+(unsigned)q)>(unsigned)block && q!= &proctab[currpid].vmemlist) ||
+	if (((top=q->mlen+(unsigned)q)>(unsigned)block && q!= proctab[currpid].vmemlist) ||
 	    (p!=NULL && (size+(unsigned)block) > (unsigned)p )) {
 		restore(ps);
 		return(SYSERR);
 	}
-	if ( q!= &proctab[currpid].vmemlist && top == (unsigned)block )
+	if ( q!= proctab[currpid].vmemlist && top == (unsigned)block )
 			q->mlen += size;
 	else {
 		block->mlen = size;

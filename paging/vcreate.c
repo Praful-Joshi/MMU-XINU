@@ -87,13 +87,15 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	}
 	pptr->store = store;
 	pptr->vhpno = 4096;
-	struct mblock *mptr;
-	// init memlist
-	mptr = 4096 * NBPG; // set pointer to virtual addr
-	mptr->mlen = NBPG * hsize;
-	mptr->mnext = NULL; // no next, only one big block at the start
-	pptr->vmemlist->mnext = mptr; //next starts at virtual addr space
-	pptr->vmemlist->mlen = hsize;
+	pptr->vmemlist->mlen = -1;
+	// struct mblock *mptr;
+	// // init memlist
+	// mptr = 4096 * NBPG; // set pointer to virtual addr
+	// mptr->mlen = (unsigned int) (NBPG * hsize);
+	// mptr->mnext = NULL; // no next, only one big block at the start
+	// pptr->vmemlist->mnext = 4096 * NBPG; //next starts at virtual addr space
+	// // pptr->vmemlist->mlen = (unsigned int) (NBPG * hsize);
+	// kprintf("Memlist with len %d allocated \n", pptr->vmemlist->mnext);
 
 		/* Bottom of stack */
 	*saddr = MAGIC;

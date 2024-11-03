@@ -24,14 +24,17 @@ WORD	*vgetmem(nbytes)
 		return( (WORD *)SYSERR);
 	}
 	nbytes = (unsigned int) roundmb(nbytes);
-	for (q= &(proctab[currpid].vmemlist),p=proctab[currpid].vmemlist->mnext ;
+	for (q= proctab[currpid].vmemlist,p=proctab[currpid].vmemlist->mnext ;
 	     p != (struct mblock *) NULL ;
 	     q=p,p=p->mnext)
+
 		if ( p->mlen == nbytes) {
 			q->mnext = p->mnext;
 			restore(ps);
 			return( (WORD *)p );
 		} else if ( p->mlen > nbytes ) {
+			// kprintf("MLEN of %d found at %x\n", p->mlen, p);
+
 			leftover = (struct mblock *)( (unsigned)p + nbytes );
 			q->mnext = leftover;
 			leftover->mnext = p->mnext;

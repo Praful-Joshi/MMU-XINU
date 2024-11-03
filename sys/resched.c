@@ -92,6 +92,16 @@ int	resched()
 	}
 	//pdbr always in mem
 	write_cr3(nptr->pdbr);
+	if (nptr->using_vmem == 1 && nptr->vmemlist->mlen == -1) {
+		// init mem list if not initialized
+		struct mblock *mptr;
+		mptr = 4096 * NBPG; // set pointer to virtual addr
+		mptr->mlen = (unsigned int) (NBPG * nptr->vhpnpages);
+		mptr->mnext = NULL; // no next, only one big block at the start
+		nptr->vmemlist->mnext = 4096 * NBPG; //next starts at virtual addr space
+		// pptr->vmemlist->mlen = (unsigned int) (NBPG * hsize);
+		// kprintf("Memlist with len %d allocated \n", nptr->vmemlist->mnext->mlen);
+	}
 	ctxsw(&optr->pesp, optr->pirmask, &nptr->pesp, nptr->pirmask);
 	
 	

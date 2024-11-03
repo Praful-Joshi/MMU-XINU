@@ -68,6 +68,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	pptr->pdevs[0] = pptr->pdevs[1] = pptr->ppagedev = BADDEV;
 	pptr->pdbr = init_pd(pid); // for global tables
 	pptr->using_vmem = -1;
+	pptr->vmemlist->mnext = NULL;
 
 		/* Bottom of stack */
 	*saddr = MAGIC;
