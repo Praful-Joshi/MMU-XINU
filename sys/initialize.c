@@ -49,6 +49,11 @@ int	console_dev;		/* the console device			*/
 /*  added for the demand paging */
 int page_replace_policy = SC;
 
+int global_frame_1;
+int global_frame_2;
+int global_frame_3;
+int global_frame_4;
+
 pd_t *init_pd(int pid) {
 	// init global page tables (x4)
 	// also init page directory
@@ -65,56 +70,120 @@ pd_t *init_pd(int pid) {
 	// pd->pd_write = 1;
 	// now allocate first four frames for the first four page tables
 	int i = 0;
-	for (i = 0; i < 4; i++) {
-		int pt_frame;
-		pt_t *pt;
-		get_frm(&pt_frame);
-		frm_tab[pt_frame].fr_status = FRM_MAPPED;
-		frm_tab[pt_frame].fr_pid = pid;
-		frm_tab[pt_frame].fr_type = FR_TBL;
-		frm_tab[pt_frame].fr_vpno = FRAME0 + pt_frame;
-		pt = (pt_t *) (NBPG * (pt_frame + FRAME0));
-		// pt->pt_pres = 0;
-		// pt->pt_write = 1;
-		pd[i].pd_base = FRAME0 + pt_frame;//(((unsigned int) pt) >> 3);
-		pd[i].pd_pres = 1;
-		pd[i].pd_write = 1;
-		pd[i].pd_user = 0;
-		pd[i].pd_pwt = 0;
-		pd[i].pd_pcd = 0;
-		pd[i].pd_acc = 0;
-		pd[i].pd_mbz = 0;
-		pd[i].pd_fmb = 0;
-		pd[i].pd_global = 0;
-		pd[i].pd_avail = 0;
-		int j = 0;
-		for (j = 0; j < 1024; j++) {
-			pt[j].pt_pres = 1;
-			pt[j].pt_write = 1;
-			pt[j].pt_user = 0;
-			pt[j].pt_pwt = 0;
-			pt[j].pt_pcd = 0;
-			pt[j].pt_acc = 0;
-			pt[j].pt_dirty = 0;
-			pt[j].pt_mbz = 0;
-			pt[j].pt_global = 0;
-			pt[j].pt_avail = 0;
-			pt[j].pt_base = (FRAME0 * i) + j; // map to the exact phsyical frame
+	if (pid == 0) {
+		for (i = 0; i < 4; i++) {
+			int pt_frame;
+			pt_t *pt;
+			get_frm(&pt_frame);
+			frm_tab[pt_frame].fr_status = FRM_MAPPED;
+			frm_tab[pt_frame].fr_pid = pid;
+			frm_tab[pt_frame].fr_type = FR_TBL;
+			frm_tab[pt_frame].fr_vpno = FRAME0 + pt_frame;
+			pt = (pt_t *) (NBPG * (pt_frame + FRAME0));
+			if (i == 0) {
+				global_frame_1 = pt_frame;
+			} else if (i == 1) {
+				global_frame_2 = pt_frame;
+			} else if (i == 2) {
+				global_frame_3 = pt_frame;
+			} else if (i == 3) {
+				global_frame_4 = pt_frame;
+			}
+			// pt->pt_pres = 0;
+			// pt->pt_write = 1;
+			pd[i].pd_base = FRAME0 + pt_frame;//(((unsigned int) pt) >> 3);
+			pd[i].pd_pres = 1;
+			pd[i].pd_write = 1;
+			pd[i].pd_user = 0;
+			pd[i].pd_pwt = 0;
+			pd[i].pd_pcd = 0;
+			pd[i].pd_acc = 0;
+			pd[i].pd_mbz = 0;
+			pd[i].pd_fmb = 0;
+			pd[i].pd_global = 0;
+			pd[i].pd_avail = 0;
+			int j = 0;
+			for (j = 0; j < 1024; j++) {
+				pt[j].pt_pres = 1;
+				pt[j].pt_write = 1;
+				pt[j].pt_user = 0;
+				pt[j].pt_pwt = 0;
+				pt[j].pt_pcd = 0;
+				pt[j].pt_acc = 0;
+				pt[j].pt_dirty = 0;
+				pt[j].pt_mbz = 0;
+				pt[j].pt_global = 0;
+				pt[j].pt_avail = 0;
+				pt[j].pt_base = (FRAME0 * i) + j; // map to the exact phsyical frame
+			}
 		}
-	}
-	// fill in rest of entries
-	for (i = 4; i < 1024; i++) {
-		pd[i].pd_pres = 0;
-		pd[i].pd_write = 1;
-		pd[i].pd_user = 0;
-		pd[i].pd_pwt = 0;
-		pd[i].pd_pcd = 0;
-		pd[i].pd_acc = 0;
-		pd[i].pd_mbz = 0;
-		pd[i].pd_fmb = 0;
-		pd[i].pd_global = 0;
-		pd[i].pd_avail = 0;
-		pd[i].pd_base = 0;
+		// fill in rest of entries
+		for (i = 4; i < 1024; i++) {
+			pd[i].pd_pres = 0;
+			pd[i].pd_write = 1;
+			pd[i].pd_user = 0;
+			pd[i].pd_pwt = 0;
+			pd[i].pd_pcd = 0;
+			pd[i].pd_acc = 0;
+			pd[i].pd_mbz = 0;
+			pd[i].pd_fmb = 0;
+			pd[i].pd_global = 0;
+			pd[i].pd_avail = 0;
+			pd[i].pd_base = 0;
+		}
+	} else {
+		// just use already created pts
+		for (i = 0; i < 4; i++) {
+			int pt_frame = 0;
+			if (i == 0) {
+				pt_frame = global_frame_1;
+			} else if (i == 1) {
+				pt_frame = global_frame_2;
+			} else if (i == 2) {
+				pt_frame = global_frame_3;
+			} else if (i == 3) {
+				pt_frame = global_frame_4;
+			}
+			pt_t *pt = (pt_t *) (NBPG * (pt_frame + FRAME0));
+			pd[i].pd_base = FRAME0 + pt_frame;//(((unsigned int) pt) >> 3);
+			pd[i].pd_pres = 1;
+			pd[i].pd_write = 1;
+			pd[i].pd_user = 0;
+			pd[i].pd_pwt = 0;
+			pd[i].pd_pcd = 0;
+			pd[i].pd_acc = 0;
+			pd[i].pd_mbz = 0;
+			pd[i].pd_fmb = 0;
+			pd[i].pd_global = 0;
+			pd[i].pd_avail = 0;
+			int j = 0;
+			for (j = 0; j < 1024; j++) {
+				pt[j].pt_pres = 1;
+				pt[j].pt_write = 1;
+				pt[j].pt_user = 0;
+				pt[j].pt_pwt = 0;
+				pt[j].pt_pcd = 0;
+				pt[j].pt_acc = 0;
+				pt[j].pt_dirty = 0;
+				pt[j].pt_mbz = 0;
+				pt[j].pt_global = 0;
+				pt[j].pt_avail = 0;
+				pt[j].pt_base = (FRAME0 * i) + j; // map to the exact phsyical frame
+			}
+		}
+		for (i = 4; i < 1024; i++) {
+			pd[i].pd_pres = 0;
+			pd[i].pd_write = 1;
+			pd[i].pd_user = 0;
+			pd[i].pd_pwt = 0;
+			pd[i].pd_pcd = 0;
+			pd[i].pd_acc = 0;
+			pd[i].pd_mbz = 0;
+			pd[i].pd_fmb = 0;
+			pd[i].pd_global = 0;
+			pd[i].pd_avail = 0;
+			pd[i].pd_base = 0;
+		}
 	}
 	return NBPG * (avail + FRAME0);
 }

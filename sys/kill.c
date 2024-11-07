@@ -8,6 +8,7 @@
 #include <io.h>
 #include <q.h>
 #include <stdio.h>
+#include <paging.h>
 
 /*------------------------------------------------------------------------
  * kill  --  kill a process and remove it from the system
@@ -18,6 +19,14 @@ SYSCALL kill(int pid)
 	STATWORD ps;    
 	struct	pentry	*pptr;		/* points to proc. table for pid*/
 	int	dev;
+
+	// Free all frames relating to this proc
+	int i = 0;
+	for (i = 0; i < NFRAMES; i++) {
+		if (frm_tab[i].fr_status == FRM_MAPPED && frm_tab[i].fr_pid == pid) {
+			free_frm(i);
+		}
+	}
 
 	disable(ps);
 	if (isbadpid(pid) || (pptr= &proctab[pid])->pstate==PRFREE) {

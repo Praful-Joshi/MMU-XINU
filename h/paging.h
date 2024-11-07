@@ -61,6 +61,12 @@ typedef struct{
 
 extern bs_map_t bsm_tab[];
 extern fr_map_t frm_tab[];
+
+extern int global_frame_1;
+extern int global_frame_2;
+extern int global_frame_3;
+extern int global_frame_4;
+
 /* Prototypes for required API calls */
 SYSCALL xmmap(int, bsd_t, int);
 SYSCALL xunmap(int);
