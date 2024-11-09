@@ -62,7 +62,7 @@ int	resched()
 				// write to bs
 				// kprintf("Frame %d, Type: %d, PID: %d, Status: %d, Dirty: %d\n", i, frm_tab[i].fr_type, frm_tab[i].fr_pid, frm_tab[i].fr_status, frm_tab[i].fr_dirty);
 
-				kprintf("Writing page %d to backign stoer, %c\n", frm_tab[i].fr_vpno - optr->vhpno, *(char *) ((FRAME0+i)*NBPG));
+				// kprintf("Writing page %d to backign stoer, %c\n", frm_tab[i].fr_vpno - optr->vhpno, *(char *) ((FRAME0+i)*NBPG));
 				frm_tab[i].fr_dirty == 0;
 				write_bs((char *) ((FRAME0+i)*NBPG), optr->store, frm_tab[i].fr_vpno - optr->vhpno);
 			}

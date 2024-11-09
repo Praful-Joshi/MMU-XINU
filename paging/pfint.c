@@ -83,7 +83,7 @@ SYSCALL pfint()
     // kprintf("Current pid: %d\n", currpid);
     // kprintf("Frame for page: %d\n", frame);
     read_bs((FRAME0+frame)*NBPG, store, pageth);
-    kprintf("Got %c from backing store in proc %d\n", *(char *) ((FRAME0+frame)*NBPG), currpid);
+    // kprintf("Got %c from backing store in proc %d\n", *(char *) ((FRAME0+frame)*NBPG), currpid);
 
     // if curr proc is using xmmap/xmunmap, then invalidate other procs relevant pages
     int id = 0;
