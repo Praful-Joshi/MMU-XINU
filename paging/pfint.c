@@ -72,6 +72,7 @@ SYSCALL pfint()
     // page table entry now valid and present
     pt_entry->pt_pres = 1;
     pt_entry->pt_write = 1;
+    frm_tab[frame].fr_dirty = 1;
     pt_entry->pt_base = FRAME0 + frame;
     // if accessing VM, then it has to be in the backing store. Find out where (assuming vmmap only now)
     int store = -1;
@@ -82,6 +83,44 @@ SYSCALL pfint()
     // kprintf("Current pid: %d\n", currpid);
     // kprintf("Frame for page: %d\n", frame);
     read_bs((FRAME0+frame)*NBPG, store, pageth);
+    kprintf("Got %c from backing store in proc %d\n", *(char *) ((FRAME0+frame)*NBPG), currpid);
+
+    // if curr proc is using xmmap/xmunmap, then invalidate other procs relevant pages
+    int id = 0;
+    int vpage = addr / NBPG;
+    int pageoff = vpage - proctab[currpid].vhpno;
+
+    for (id = 0; id < NPROC; id++) {
+      // kprintf(" id %d\n", id);
+      if (id == currpid) {
+        // kprintf("Skipping id %d\n", id);
+        continue;
+      }
+      struct pentry *cur = &proctab[id];
+      // make sure the page is accessible
+      
+      if (cur->using_vmem == 0 && cur->store == store && cur->vhpnpages >= pageoff) {
+        // then we invalidate the appropriate page table entry for the proc relavant page
+        // kprintf("Invalidating proc %d pages\n", id);
+        int vpage_cur = cur->vhpno + pageoff; // the vpage we gotta invalidate
+        virt_addr_t *addr_curr = vpage_cur * NBPG;
+        pd_t *pd_entry_cur = (pd_t *) (cur->pdbr + (addr_curr->pd_offset * 4));
+        pt_t *pt_entry_cur = (pt_t *) ((pd_entry_cur->pd_base * NBPG) + (addr_curr->pt_offset * 4));
+        pt_entry_cur->pt_pres = 0; // invalidate
+        
+        // now invalidate the frame
+        int f = 0;
+        for (f = 0; f < NFRAMES; f++) {
+          if (frm_tab[f].fr_pid == id && frm_tab[f].fr_vpno == vpage_cur) {
+            // free frame
+            free_frm(f);
+            // kprintf("Invalidating frame with page %d for proc %d, current proc %d\n", vpage_cur, id, currpid);
+            break;
+          }
+        }
+      }
+    }
+
   }
   enable(ps);
   return OK;

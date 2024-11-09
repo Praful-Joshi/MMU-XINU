@@ -43,6 +43,10 @@ SYSCALL get_frm(int* avail)
       return OK;
     }
   }
+
+  // kick out frame
+
+
   //none available
   enable(ps);
   return SYSERR;

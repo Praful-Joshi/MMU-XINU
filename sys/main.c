@@ -28,14 +28,52 @@ void proc1_test1(char *msg, int lck) {
   for (i = 0; i < 26; ++i) {
     *(addr + (i * NBPG)) = 'A' + i;
   }
+  kprintf("wrote\n");
+
 
   sleep(6);
 
   for (i = 0; i < 26; ++i) {
     kprintf("0x%08x: %c\n", addr + (i * NBPG), *(addr + (i * NBPG)));
   }
+  sleep(3);
 
+  // kprintf("Unmapping\n");
   xmunmap(PROC1_VPNO);
+  return;
+}
+
+void proc2_test1(char *msg, int lck) {
+  char *addr;
+  int i;
+
+  // get_bs(TEST1_BS, 100);
+
+  if (xmmap(PROC1_VPNO, TEST1_BS, 100) == SYSERR) {
+    kprintf("xmmap call failed\n");
+    sleep(3);
+    return;
+  } else {
+    // kprintf("call works\n");
+  }
+
+  sleep(2);
+
+  addr = (char *) PROC1_VADDR;
+  for (i = 25; i >= 0; --i) {
+    // *(addr + (i * NBPG)) = 'A' + i;
+    *(addr + (i * NBPG)) = 'Z' - i;
+  }
+  kprintf("overwrote\n");
+
+  sleep(8);
+  kprintf("Proc 2 ---------- \n" );
+
+  for (i = 0; i < 26; ++i) {
+    kprintf("0x%08x: %c\n", addr + (i * NBPG), *(addr + (i * NBPG)));
+  }
+
+  // xmunmap(PROC1_VPNO);
   return;
 }
 
@@ -76,15 +114,20 @@ int main() {
 
   kprintf("\n1: shared memory\n");
   pid1 = create(proc1_test1, 2000, 20, "proc1_test1", 0, NULL);
+  pid2 = create(proc2_test1, 2000, 20, "proc2_test1", 0, NULL);
   // kprintf("Main pID: %d, proc PID: %d\n", currpid, pid1);
+  resume(pid2);
   resume(pid1);
-  sleep(10);
 
-  kprintf("\n2: vgetmem/vfreemem\n");
-  pid1 = vcreate(proc1_test2, 2000, 100, 20, "proc1_test2", 0, NULL);
-  kprintf("pid %d has private heap\n", pid1);
-  resume(pid1);
-  sleep(3);
+  sleep(10);
+  kprintf("Proc 1 pid: %d, Proc 2 pid: %d\n", pid1, pid2);
+
+
+  // kprintf("\n2: vgetmem/vfreemem\n");
+  // pid1 = vcreate(proc1_test2, 2000, 100, 20, "proc1_test2", 0, NULL);
+  // kprintf("pid %d has private heap\n", pid1);
+  // resume(pid1);
+  // sleep(3);
 
   // kprintf("\n3: Frame test\n");
   // pid1 = create(proc1_test3, 2000, 20, "proc1_test3", 0, NULL);

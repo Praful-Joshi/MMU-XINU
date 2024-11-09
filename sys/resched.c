@@ -22,6 +22,7 @@ int	resched()
 	register struct	pentry	*optr;	/* pointer to old process entry */
 	register struct	pentry	*nptr;	/* pointer to new process entry */
 	register int i;
+	register int oldpid;
 
 	disable(PS);
 	/* no switch needed if current process priority higher than next*/
@@ -50,6 +51,24 @@ int	resched()
 		optr->pstate = PRREADY;
 		insert(currpid,rdyhead,optr->pprio);
 	}
+	oldpid = currpid;
+
+	// kprintf("vmem status of %d: %d\n", oldpid, (&(proctab[oldpid]))->using_vmem);
+	if (optr->using_vmem == 0) {
+		int i = 0;
+		for (i = 0; i < NFRAMES; i++) {
+			// if (frm_tab[i].fr_type)
+			if (frm_tab[i].fr_type == FR_PAGE && frm_tab[i].fr_pid == oldpid && frm_tab[i].fr_status == FRM_MAPPED && frm_tab[i].fr_dirty == 1)  {
+				// write to bs
+				// kprintf("Frame %d, Type: %d, PID: %d, Status: %d, Dirty: %d\n", i, frm_tab[i].fr_type, frm_tab[i].fr_pid, frm_tab[i].fr_status, frm_tab[i].fr_dirty);
+
+				kprintf("Writing page %d to backign stoer, %c\n", frm_tab[i].fr_vpno - optr->vhpno, *(char *) ((FRAME0+i)*NBPG));
+				frm_tab[i].fr_dirty == 0;
+				write_bs((char *) ((FRAME0+i)*NBPG), optr->store, frm_tab[i].fr_vpno - optr->vhpno);
+			}
+		}
+	}
+	
 
 	/* remove highest priority process at end of ready list */
 
@@ -83,12 +102,14 @@ int	resched()
 #ifdef	DEBUG
 	PrintSaved(nptr);
 #endif
+	// kprintf("before old pid %d\n", oldpid);
 	// set vmmap vars
 	if (nptr->using_vmem == 0) {
+		// kprintf("old pid %d\n", oldpid);
 		bsm_tab[nptr->store].bs_vpno = nptr->vhpno;
 		bsm_tab[nptr->store].bs_npages = nptr->vhpnpages;
 		// kprintf("Setting PID to %d\n", currpid);
-		bsm_tab[nptr->store].bs_pid = currpid;
+		bsm_tab[nptr->store].bs_pid = currpid;		
 	}
 	//pdbr always in mem
 	write_cr3(nptr->pdbr);
