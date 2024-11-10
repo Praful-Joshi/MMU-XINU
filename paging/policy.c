@@ -4,8 +4,9 @@
 #include <kernel.h>
 #include <paging.h>
 
-
-extern int page_replace_policy;
+int debug_mode;
+int q_head;
+int page_replace_policy;
 /*-------------------------------------------------------------------------
  * srpolicy - set page replace policy 
  *-------------------------------------------------------------------------
@@ -14,8 +15,8 @@ SYSCALL srpolicy(int policy)
 {
   /* sanity check ! */
 
-  kprintf("To be implemented!\n");
-
+  page_replace_policy = policy;
+  debug_mode = 1;
   return OK;
 }
 

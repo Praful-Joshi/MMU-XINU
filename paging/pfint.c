@@ -74,6 +74,7 @@ SYSCALL pfint()
     pt_entry->pt_write = 1;
     frm_tab[frame].fr_dirty = 1;
     pt_entry->pt_base = FRAME0 + frame;
+    frm_tab[pd_entry->pd_base - FRAME0].fr_refcnt++;
     // if accessing VM, then it has to be in the backing store. Find out where (assuming vmmap only now)
     int store = -1;
     int pageth = -1;

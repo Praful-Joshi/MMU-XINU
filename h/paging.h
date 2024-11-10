@@ -67,6 +67,16 @@ extern int global_frame_2;
 extern int global_frame_3;
 extern int global_frame_4;
 
+extern int q_head;
+extern int debug_mode;
+extern int page_replace_policy;
+
+typedef struct{
+  int fr_id;
+  int next;
+} q_entry;
+extern q_entry cqueue[];
+
 /* Prototypes for required API calls */
 SYSCALL xmmap(int, bsd_t, int);
 SYSCALL xunmap(int);
