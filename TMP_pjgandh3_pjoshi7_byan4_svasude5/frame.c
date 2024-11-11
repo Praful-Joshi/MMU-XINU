@@ -103,17 +103,17 @@ SYSCALL free_frm(int i)
     pd_entry = (pd_t*)(pdbr + sizeof(pd_t)*pd_offset);
     pt_entry = pd_entry->pd_base*NBPG + sizeof(pt_t)*pt_offset;
     write_bs((i + FRAME0) * NBPG,bs_id,pageth);  
-    int entry = pd_entry->pd_base - FRAME0;
+    int tmp_entry = pd_entry->pd_base - FRAME0;
 		
-    frm_tab[entry].fr_refcnt--;
+    frm_tab[tmp_entry].fr_refcnt--;
 
-		if (frm_tab[entry].fr_refcnt == 0)
+		if (frm_tab[tmp_entry].fr_refcnt == 0)
 		{
 			pd_entry->pd_pres = 0;
-			frm_tab[entry].fr_status = FRM_UNMAPPED;
-			frm_tab[entry].fr_type = FR_PAGE;
-			frm_tab[entry].fr_pid = -1;
-			frm_tab[entry].fr_vpno = 4096;	
+			frm_tab[tmp_entry].fr_status = FRM_UNMAPPED;
+			frm_tab[tmp_entry].fr_type = FR_PAGE;
+			frm_tab[tmp_entry].fr_pid = -1;
+			frm_tab[tmp_entry].fr_vpno = 4096;	
 		} 	
 	
 		pt_entry->pt_pres = 0;
@@ -175,9 +175,9 @@ int page_replacement(){
         else{
           cqueue[prev_frame].next = cqueue[curr_frame].next;
           cqueue[curr_frame].next = -1;
-          if(debug_mode==1){
-            kprintf("176, Replacing frame %d\n", curr_frame);
-          }
+          // if(debug_mode==1){
+          //   kprintf("176, Replacing frame %d\n", curr_frame);
+          // }
           restore(ps);
           return curr_frame;
         }
@@ -189,13 +189,13 @@ int page_replacement(){
     }
 
     curr_frame = q_head;
-    kprintf("%d\n", q_head);
+    // kprintf("%d\n", q_head);
     q_head = cqueue[curr_frame].next;
     cqueue[curr_frame].next = -1;
     //You didn't find anything 
-    if(debug_mode==1){
-      kprintf("192, Replacing frame %d\n", curr_frame);
-    }
+    // if(debug_mode==1){
+    //   kprintf("192, Replacing frame %d\n", curr_frame);
+    // }
     restore(ps);
     return curr_frame;
 
@@ -205,7 +205,7 @@ int page_replacement(){
 
 void init_queue(){
   
-  kprintf("Init queue called\n");
+  // kprintf("Init queue called\n");
   debug_mode = 1;
   q_head = -1;
   int i;
