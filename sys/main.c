@@ -26,7 +26,9 @@ void proc1_test1(char *msg, int lck) {
 
   addr = (char *) PROC1_VADDR;
   for (i = 0; i < 26; ++i) {
+    // kprintf("before\n");
     *(addr + (i * NBPG)) = 'A' + i;
+    // kprintf("after\n");
   }
   // kprintf("wrote\n");
 
@@ -111,17 +113,17 @@ void proc1_test3(char *msg, int lck) {
 int main() {
   int pid1;
   int pid2;
+  srpolicy(3);
 
   kprintf("\n1: shared memory\n");
   pid1 = create(proc1_test1, 2000, 20, "proc1_test1", 0, NULL);
   // pid2 = create(proc2_test1, 2000, 20, "proc2_test1", 0, NULL);
   // kprintf("Main pID: %d, proc PID: %d\n", currpid, pid1);
-
   resume(pid1);
   // resume(pid2);
 
   sleep(10);
-  kprintf("Proc 1 pid: %d, Proc 2 pid: %d\n", pid1, pid2);
+  // kprintf("Proc 1 pid: %d, Proc 2 pid: %d\n", pid1, pid2);
 
 
   kprintf("\n2: vgetmem/vfreemem\n");
