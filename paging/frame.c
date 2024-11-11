@@ -165,7 +165,7 @@ int page_replacement(){
           // kprintf("New head - %d\n", q_head);
           cqueue[curr_frame].next = -1;
           if(debug_mode==1){
-            kprintf("166, Replacing frame %d\n", curr_frame);
+            kprintf("Replacing frame %d\n", curr_frame);
           }
           restore(ps);
           return curr_frame;
