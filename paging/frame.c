@@ -164,9 +164,9 @@ int page_replacement(){
           q_head = cqueue[curr_frame].next;
           // kprintf("New head - %d\n", q_head);
           cqueue[curr_frame].next = -1;
-          // if(debug_mode==1){
-          //   kprintf("166, Replacing frame %d\n", curr_frame);
-          // }
+          if(debug_mode==1){
+            kprintf("166, Replacing frame %d\n", curr_frame);
+          }
           restore(ps);
           return curr_frame;
         }
@@ -175,9 +175,9 @@ int page_replacement(){
         else{
           cqueue[prev_frame].next = cqueue[curr_frame].next;
           cqueue[curr_frame].next = -1;
-          // if(debug_mode==1){
-          //   kprintf("176, Replacing frame %d\n", curr_frame);
-          // }
+          if(debug_mode==1){
+            kprintf("Replacing frame %d\n", curr_frame);
+          }
           restore(ps);
           return curr_frame;
         }
@@ -193,9 +193,9 @@ int page_replacement(){
     q_head = cqueue[curr_frame].next;
     cqueue[curr_frame].next = -1;
     //You didn't find anything 
-    // if(debug_mode==1){
-    //   kprintf("192, Replacing frame %d\n", curr_frame);
-    // }
+    if(debug_mode==1){
+      kprintf("Replacing frame %d\n", curr_frame);
+    }
     restore(ps);
     return curr_frame;
 
@@ -206,7 +206,7 @@ int page_replacement(){
 void init_queue(){
   
   // kprintf("Init queue called\n");
-  debug_mode = 1;
+  debug_mode = 0;
   q_head = -1;
   int i;
   for(i=0;i<NFRAMES;i++){

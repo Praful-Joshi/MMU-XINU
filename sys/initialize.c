@@ -310,6 +310,7 @@ sysinit()
 
 	init_frm(); // initialize frame table
 	init_bsm(); // initialize backing store map list
+	init_queue();
 
 
 #ifdef	MEMMARK

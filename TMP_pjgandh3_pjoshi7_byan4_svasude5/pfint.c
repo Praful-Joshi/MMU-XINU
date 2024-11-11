@@ -65,6 +65,7 @@ SYSCALL pfint()
     // get frame and allocate page
     int frame;
     get_frm(&frame);
+    append_queue(frame);
     frm_tab[frame].fr_status = FRM_MAPPED;
     frm_tab[frame].fr_pid = currpid;
     frm_tab[frame].fr_type = FR_PAGE;
