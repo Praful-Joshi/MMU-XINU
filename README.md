@@ -1,8 +1,8 @@
-# 📦 XINU MMU Project
+# 📦 XINU MMU
 
 ### Project Overview
 
-This project extends a barebones version of the Xinu operating system by adding full **demand paging** support, including an **MMU (Memory Management Unit)** implementation.  
+This project extends a barebones version of the XINU operating system by adding full **demand paging** support, including an **MMU (Memory Management Unit)** implementation.  
 It introduces paging-based virtual memory with dynamic allocation, a backing store system, page fault handling, and page replacement policies.
 
 ### Key Features
